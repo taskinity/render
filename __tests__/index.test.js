@@ -27,7 +27,7 @@ describe('DSLFlowVisualizer', () => {
 
   test('should parse DSL content correctly', () => {
     const dsl = `flow test_flow:
-      description "Test description"
+      description: "Test description"
       task1 -> task2
       task2 -> task3`;
     

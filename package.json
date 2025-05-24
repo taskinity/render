@@ -21,6 +21,12 @@
     },
     "setupFilesAfterEnv": [
       "<rootDir>/jest.setup.js"
+    ],
+    "transform": {
+      "^.+\\.js$": "babel-jest"
+    },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(prismjs|@babel)/)"
     ]
   },
   "keywords": [

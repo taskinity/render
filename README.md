@@ -1,8 +1,24 @@
 # Taskinity Render
 
-Prosta biblioteka JavaScript do renderowania diagramów przepływu Taskinity i kolorowania składni w dokumentach Markdown.
+[![npm version](https://img.shields.io/npm/v/taskinity-render.svg?style=flat-square)](https://www.npmjs.com/package/taskinity-render)
+[![GitHub license](https://img.shields.io/github/license/taskinity/render?style=flat-square)](https://github.com/taskinity/render/blob/main/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/taskinity/render?style=flat-square)](https://github.com/taskinity/render/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/taskinity/render?style=flat-square)](https://github.com/taskinity/render/issues)
 
-## Instalacja
+A JavaScript library for rendering Taskinity flow diagrams and syntax highlighting in Markdown documents.
+
+🔗 **Live Demo**: https://taskinity.github.io/render/
+
+## Features
+
+- 🎨 Automatic syntax highlighting for code blocks (Python, Bash, JavaScript, YAML, JSON, Markdown)
+- 📊 Interactive flow diagram rendering for DSL code blocks
+- 📋 Copy-to-clipboard buttons for code blocks
+- 🔢 Line numbering for code blocks
+- 🎨 Theme support
+- 📦 Lightweight and easy to integrate
+
+## Installation
 
 ```bash
 npm install taskinity-render
@@ -14,26 +30,56 @@ lub bezpośrednio z CDN:
 <script src="https://cdn.jsdelivr.net/npm/taskinity-render/dist/taskinity-render.min.js"></script>
 ```
 
-## Użycie
+## Usage
 
-Wystarczy dodać jeden tag script do dokumentu Markdown:
+### Basic Usage
+
+Add the following script tag to your HTML document, just before the closing `</body>` tag:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/taskinity-render/dist/taskinity-render.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    window.taskinityRender = new TaskinityRender({
+      theme: 'default',
+      lineNumbers: true,
+      copyButton: true
+    });
+  });
+</script>
 ```
 
-Biblioteka automatycznie:
+### For Markdown Content
 
-1. Koloruje składnię wszystkich bloków kodu (Python, Bash, JavaScript, YAML, JSON, Markdown)
-2. Renderuje diagramy przepływu dla bloków kodu DSL (zaczynających się od słowa kluczowego "flow")
-3. Dodaje przyciski kopiowania do bloków kodu
-4. Dodaje numerację linii do bloków kodu
+If you're using Markdown, make sure your DSL code blocks are wrapped with triple backticks and marked with the `dsl` language:
 
-## Przykład
-
-Dla następującego bloku kodu DSL:
-
+````markdown
+```dsl
+flow EmailProcessing:
+    description: "Email Processing Flow"
+    fetch_emails -> classify_emails
+    classify_emails -> process_urgent_emails
+    classify_emails -> process_regular_emails
 ```
+````
+
+### For HTML Content
+
+If you're writing HTML directly, use the following format:
+
+```html
+<pre><code class="language-dsl">flow EmailProcessing:
+    description: "Email Processing Flow"
+    fetch_emails -> classify_emails
+    classify_emails -> process_urgent_emails
+    classify_emails -> process_regular_emails</code></pre>
+```
+
+## Example
+
+Here's an example of a DSL flow that will be automatically rendered as a diagram:
+
+```dsl
 flow EmailProcessing:
     description: "Email Processing Flow"
     fetch_emails -> classify_emails
@@ -43,7 +89,7 @@ flow EmailProcessing:
 
 Biblioteka automatycznie wygeneruje interaktywny diagram przepływu.
 
-## Konfiguracja
+## Configuration
 
 Można dostosować działanie biblioteki:
 
@@ -59,17 +105,25 @@ Można dostosować działanie biblioteki:
 </script>
 ```
 
-## Rozwój
+## Development
 
 ```bash
-# Instalacja zależności
+# Install dependencies
 npm install
 
-# Uruchomienie w trybie deweloperskim
+# Run in development mode
 npm run dev
 
-# Budowanie wersji produkcyjnej
+# Build for production
 npm run build
 ```
 
-<script src="https://cdn.jsdelivr.net/npm/taskinity-render/dist/taskinity-render.min.js"></script>
+## Links
+
+- [NPM Package](https://www.npmjs.com/package/taskinity-render)
+- [GitHub Repository](https://github.com/taskinity/render)
+- [Live Demo](https://taskinity.github.io/render/)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

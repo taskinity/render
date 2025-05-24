@@ -20,38 +20,47 @@
             overflow: auto;
         }
         .taskinity-diagram {
+            width: 100%;
+            min-height: 200px;
             margin: 1em 0;
             border: 1px solid #e1e4e8;
             border-radius: 6px;
             padding: 16px;
             background: white;
         }
+        .diagram-container {
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
     <h1>Taskinity Render - Local Preview</h1>
     
-    <h2>DSL Example</h2>
-    
-    <pre><code class="language-dsl">flow EmailProcessing:
+    <div class="diagram-container">
+        <h2>DSL Example</h2>
+        <div class="taskinity-diagram" data-diagram-id="email-flow">
+            <pre><code class="language-dsl">flow EmailProcessing:
     description: "Email Processing Flow"
     fetch_emails -> classify_emails
     classify_emails -> process_urgent_emails
     classify_emails -> process_regular_emails
-    
-    # This is a comment
     process_urgent_emails -> send_urgent_notifications
     process_regular_emails -> archive_emails</code></pre>
+        </div>
+    </div>
 
-    <h2>Another Example</h2>
-    
-    <pre><code class="language-dsl">flow UserRegistration:
+    <div class="diagram-container">
+        <h2>User Registration Flow</h2>
+        <div class="taskinity-diagram" data-diagram-id="user-registration">
+            <pre><code class="language-dsl">flow UserRegistration:
     description: "User Registration Flow"
     start -> validate_input
     validate_input -> check_email_availability
     check_email_availability -> create_user_account
     create_user_account -> send_welcome_email
     send_welcome_email -> complete_registration</code></pre>
+        </div>
+    </div>
 
     <!-- Load Taskinity Render -->
     <script>
@@ -86,54 +95,89 @@
             document.head.appendChild(script);
         }
 
-        // Initialize when DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            // Try to load from local dist first (for development)
+        // Function to initialize diagrams
+        function initializeDiagrams() {
+            if (!window.taskinityRender) {
+                console.error('Taskinity Render not initialized');
+                return;
+            }
+
+            // Process all diagram containers
+            document.querySelectorAll('.taskinity-diagram').forEach(container => {
+                const codeBlock = container.querySelector('code');
+                if (codeBlock) {
+                    try {
+                        // Clear any existing content
+                        container.innerHTML = '';
+                        // Create a new container for the diagram
+                        const diagramDiv = document.createElement('div');
+                        diagramDiv.style.width = '100%';
+                        diagramDiv.style.height = '300px'; // Fixed height for better rendering
+                        container.appendChild(diagramDiv);
+                        
+                        // Initialize the diagram
+                        window.taskinityRender.render(codeBlock.textContent, diagramDiv);
+                    } catch (error) {
+                        console.error('Error rendering diagram:', error);
+                        container.innerHTML = `
+                            <div style="color: #d32f2f; padding: 10px; background: #ffebee; border-radius: 4px;">
+                                Error rendering diagram: ${error.message}
+                            </div>
+                        `;
+                    }
+                }
+            });
+        }
+
+        // Build script paths
+        const scriptPaths = [
+            // Local development path (relative to examples/)
+            '../dist/taskinity-render.min.js',
+            // Local alternative path (if running from root)
+            './dist/taskinity-render.min.js',
+            // CDN fallback
+            'https://cdn.jsdelivr.net/npm/taskinity-render/dist/taskinity-render.min.js'
+        ];
+
+        // Function to try loading next script in the paths array
+        function tryLoadScript(pathIndex) {
+            if (pathIndex >= scriptPaths.length) {
+                showError('All script loading attempts failed. Please make sure to run `npm run build` first.');
+                return;
+            }
+
+            const path = scriptPaths[pathIndex];
+            console.log(`Attempting to load script from: ${path}`);
+            
             loadScript(
-                '../dist/taskinity-render.min.js',
+                path,
                 // On success
                 () => {
                     try {
                         if (typeof TaskinityRender === 'function') {
                             window.taskinityRender = new TaskinityRender(window.taskinityRenderConfig);
-                            console.log('Taskinity Render initialized successfully from local dist!');
+                            console.log(`Taskinity Render initialized successfully from: ${path}`);
+                            initializeDiagrams();
                         } else {
                             throw new Error('TaskinityRender is not defined');
                         }
                     } catch (error) {
-                        console.error('Error initializing from local dist, trying CDN...', error);
-                        // Fallback to CDN if local fails
-                        loadScript(
-                            'https://cdn.jsdelivr.net/npm/taskinity-render/dist/taskinity-render.min.js',
-                            () => {
-                                try {
-                                    window.taskinityRender = new TaskinityRender(window.taskinityRenderConfig);
-                                    console.log('Taskinity Render initialized from CDN!');
-                                } catch (e) {
-                                    showError('Failed to initialize from CDN: ' + e.message);
-                                }
-                            },
-                            () => showError('Failed to load Taskinity Render from any source')
-                        );
+                        console.error(`Error initializing from ${path}:`, error);
+                        tryLoadScript(pathIndex + 1);
                     }
                 },
                 // On error
                 () => {
-                    console.log('Local dist load failed, trying CDN...');
-                    loadScript(
-                        'https://cdn.jsdelivr.net/npm/taskinity-render/dist/taskinity-render.min.js',
-                        () => {
-                            try {
-                                window.taskinityRender = new TaskinityRender(window.taskinityRenderConfig);
-                                console.log('Taskinity Render initialized from CDN!');
-                            } catch (e) {
-                                showError('Failed to initialize from CDN: ' + e.message);
-                            }
-                        },
-                        () => showError('All script loading attempts failed')
-                    );
+                    console.error(`Failed to load script from: ${path}`);
+                    tryLoadScript(pathIndex + 1);
                 }
             );
+        }
+
+        // Start loading scripts when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM fully loaded, starting script loading...');
+            tryLoadScript(0);
         });
     </script>
 </body>

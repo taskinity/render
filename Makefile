@@ -1,6 +1,6 @@
 # Makefile for Taskinity Render package
 
-.PHONY: help install build test lint serve push publish-github publish-npm version clean diagnostic
+.PHONY: help install build test lint serve push publish publish-github publish-npm version clean diagnostic
 
 # Variables
 DIST_DIR = dist
@@ -82,6 +82,10 @@ publish-github:
 	git commit -m "Update render script to version $$(npm version | grep taskinity-render | cut -d\' -f4)" && \
 	git push
 	@echo "Published to GitHub Pages successfully!"
+
+## Publish to both npm and GitHub Pages
+publish: publish-npm publish-github
+	@echo "Publish completed successfully!"
 
 ## Publish to npm
 publish-npm:

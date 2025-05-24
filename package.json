@@ -19,8 +19,8 @@
     "syntax",
     "highlighting"
   ],
-  "author": "Taskinity Team",
-  "license": "MIT",
+  "author": "Tom Sapletta",
+  "license": "Apache-2.0",
   "dependencies": {
     "prismjs": "^1.29.0"
   },

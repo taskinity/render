@@ -516,13 +516,17 @@ class TaskinityRender {
 
 // Auto-initialize when the DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
+  window.TaskinityRender = TaskinityRender; // Expose globally
   window.taskinityRender = new TaskinityRender();
 });
 
 // Export the classes
 export { TaskinityRender, DSLFlowVisualizer };
 
+// Export as default for ES modules
+export default TaskinityRender;
+
 // Export a simple initialization function
-export default function initTaskinityRender(options = {}) {
+export function initTaskinityRender(options = {}) {
   return new TaskinityRender(options);
 }

@@ -1,0 +1,32 @@
+{
+  "name": "taskinity-render",
+  "version": "1.0.0",
+  "description": "Simple renderer for Taskinity flow diagrams and syntax highlighting",
+  "main": "dist/taskinity-render.min.js",
+  "scripts": {
+    "build": "webpack --mode production",
+    "dev": "webpack --mode development --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "taskinity",
+    "flow",
+    "diagram",
+    "syntax",
+    "highlighting"
+  ],
+  "author": "Taskinity Team",
+  "license": "MIT",
+  "dependencies": {
+    "prismjs": "^1.29.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.21.0",
+    "@babel/preset-env": "^7.20.2",
+    "babel-loader": "^9.1.2",
+    "css-loader": "^6.7.3",
+    "style-loader": "^3.3.1",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
+  }
+}

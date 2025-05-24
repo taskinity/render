@@ -117,6 +117,26 @@ Add the following code to your HTML document, just before the closing `</body>` 
 ### For Markdown Content
 
 If you're using Markdown, make sure your DSL code blocks are wrapped with triple backticks and marked with the `dsl` language:
+```dsl
+flow EmailProcessing:
+    description: "Email Processing Flow"
+    fetch_emails -> classify_emails
+    classify_emails -> process_urgent_emails
+    classify_emails -> process_regular_emails
+    process_urgent_emails -> send_urgent_notifications
+    process_regular_emails -> archive_emails
+```
+
+
+```dsl
+flow UserRegistration:
+    description: "User Registration Flow"
+    start -> validate_input
+    validate_input -> check_email_availability
+    check_email_availability -> create_user_account
+    create_user_account -> send_welcome_email
+    send_welcome_email -> complete_registration
+```
 
 ```dsl
 flow EmailProcessing:

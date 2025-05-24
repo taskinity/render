@@ -78,16 +78,20 @@ publish-github:
 	echo "Updating taskinity.github.io repository..."; \
 	cd $(GITHUB_PAGES_DIR) && git pull; \
 	fi
-	@echo "Creating render directory if it doesn't exist..."
-	@mkdir -p $(GITHUB_PAGES_DIR)/render
+	@echo "Creating render/dist directory if it doesn't exist..."
+	@mkdir -p $(GITHUB_PAGES_DIR)/render/dist
 	@echo "Copying built files to GitHub Pages repository..."
-	cp $(DIST_DIR)/taskinity-render.min.js $(GITHUB_PAGES_DIR)/render/
+	cp $(DIST_DIR)/taskinity-render.min.js $(GITHUB_PAGES_DIR)/render/dist/
+	cp $(DIST_DIR)/taskinity-render.min.js.LICENSE.txt $(GITHUB_PAGES_DIR)/render/dist/
+	@echo "Creating or updating index.html in the render directory..."
+	@cp index.html $(GITHUB_PAGES_DIR)/render/
 	@echo "Committing and pushing changes..."
 	@cd $(GITHUB_PAGES_DIR) && \
-	git add render/taskinity-render.min.js && \
+	git add render/dist/ render/index.html && \
 	git commit -m "Update render script to version $$(npm version | grep taskinity-render | cut -d\' -f4)" && \
 	git push
 	@echo "Published to GitHub Pages successfully!"
+	@echo "You can access it at: https://taskinity.github.io/render/"
 
 ## Publish to both npm and GitHub Pages
 publish: patch-version publish-npm publish-github

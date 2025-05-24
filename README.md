@@ -53,7 +53,6 @@ Add the following script tag to your HTML document, just before the closing `</b
 
 If you're using Markdown, make sure your DSL code blocks are wrapped with triple backticks and marked with the `dsl` language:
 
-````markdown
 ```dsl
 flow EmailProcessing:
     description: "Email Processing Flow"
@@ -61,7 +60,6 @@ flow EmailProcessing:
     classify_emails -> process_urgent_emails
     classify_emails -> process_regular_emails
 ```
-````
 
 ### For HTML Content
 
@@ -107,6 +105,8 @@ Można dostosować działanie biblioteki:
 
 ## Development
 
+### Using npm
+
 ```bash
 # Install dependencies
 npm install
@@ -116,7 +116,82 @@ npm run dev
 
 # Build for production
 npm run build
+
+# Run linter
+npm run lint
+
+# Start local server for testing
+npm start
 ```
+
+### Using Makefile
+
+The project includes a Makefile with useful commands for development and deployment:
+
+```bash
+# Show help and available commands
+make help
+
+# Install dependencies
+make install
+
+# Build the package
+make build
+
+# Run tests
+make test
+
+# Run linter
+make lint
+
+# Start local development server (port 9999)
+make serve
+
+# Bump version (interactive, asks for patch/minor/major)
+make version
+
+# Bump patch version automatically
+make patch-version
+
+# Publish to GitHub Pages
+make publish-github
+
+# Publish to npm
+make publish-npm
+
+# Publish to both npm and GitHub Pages (runs patch-version, publish-npm, and publish-github)
+make publish
+
+# Stage, commit, and push changes to GitHub (interactive commit message)
+make push
+
+# Clean build artifacts and node_modules
+make clean
+
+# Run diagnostic tests
+make diagnostic
+```
+
+### Development Workflow
+
+1. Install dependencies:
+   ```bash
+   make install
+   ```
+
+2. Make your changes to the source code in the `src` directory
+
+3. Run the development server to test your changes:
+   ```bash
+   make serve
+   ```
+   Then open http://localhost:9999 in your browser
+
+4. When ready to publish:
+   ```bash
+   make publish
+   ```
+   This will bump the version, publish to npm, and update GitHub Pages.
 
 ## Links
 
@@ -126,4 +201,7 @@ npm run build
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+
+<script src="https://cdn.jsdelivr.net/npm/taskinity-render/dist/taskinity-render.min.js"></script>

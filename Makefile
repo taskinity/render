@@ -55,6 +55,7 @@ serve:
 
 ## Bump package version (patch, minor, major)
 version:
+	git tag -l
 	@echo "Current version: $$(npm version | grep taskinity-render | cut -d\' -f4)"
 	@echo "Specify version bump type (patch, minor, major):"
 	@read TYPE && npm version $$TYPE

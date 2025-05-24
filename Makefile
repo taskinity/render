@@ -60,6 +60,11 @@ version:
 	@read TYPE && npm version $$TYPE
 	@echo "New version: $$(npm version | grep taskinity-render | cut -d\' -f4)"
 
+patch-version:
+	@echo "Current version: $$(npm version | grep taskinity-render | cut -d\' -f4)"
+	npm version patch
+	@echo "New version: $$(npm version | grep taskinity-render | cut -d\' -f4)"
+
 ## Publish to GitHub Pages
 publish-github:
 	@echo "Building package for GitHub Pages..."
@@ -84,7 +89,7 @@ publish-github:
 	@echo "Published to GitHub Pages successfully!"
 
 ## Publish to both npm and GitHub Pages
-publish: publish-npm publish-github
+publish: patch-version publish-npm publish-github
 	@echo "Publish completed successfully!"
 
 ## Publish to npm

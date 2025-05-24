@@ -89,28 +89,57 @@ patch-version:
 publish-github:
 	@echo "Building package for GitHub Pages..."
 	npm run build
+	
 	@echo "Checking if GitHub Pages directory exists..."
 	@if [ ! -d "$(GITHUB_PAGES_DIR)" ]; then \
-	echo "Cloning taskinity.github.io repository..."; \
-	git clone https://github.com/taskinity/taskinity.github.io.git $(GITHUB_PAGES_DIR); \
+		echo "Creating GitHub Pages directory..."; \
+		mkdir -p $(GITHUB_PAGES_DIR); \
+		cd $(GITHUB_PAGES_DIR) && git init && \
+		echo "# Taskinity GitHub Pages" > README.md && \
+		git add README.md && \
+		git commit -m "Initial commit"; \
 	else \
-	echo "Updating taskinity.github.io repository..."; \
-	cd $(GITHUB_PAGES_DIR) && git pull; \
+		echo "Updating local repository..."; \
+		cd $(GITHUB_PAGES_DIR) && git pull origin main || true; \
 	fi
-	@echo "Creating render/dist directory if it doesn't exist..."
-	@mkdir -p $(GITHUB_PAGES_DIR)/render/dist
-	@echo "Copying built files to GitHub Pages repository..."
-	cp $(DIST_DIR)/taskinity-render.min.js $(GITHUB_PAGES_DIR)/render/dist/
-	cp $(DIST_DIR)/taskinity-render.min.js.LICENSE.txt $(GITHUB_PAGES_DIR)/render/dist/
-	@echo "Creating or updating index.html in the render directory..."
-	@cp index.html $(GITHUB_PAGES_DIR)/render/
+	
+	@echo "Creating necessary directories..."
+	@mkdir -p $(GITHUB_PAGES_DIR)/render
+	
+	@echo "Copying built files..."
+	cp -r $(DIST_DIR)/* $(GITHUB_PAGES_DIR)/render/
+	
+	@echo "Copying examples..."
+	@mkdir -p $(GITHUB_PAGES_DIR)/render/examples
+	cp -r examples/* $(GITHUB_PAGES_DIR)/render/examples/
+	
+	@echo "Creating or updating index.html..."
+	@# Create a simple index.html that redirects to /render/
+	@echo '<!DOCTYPE html><html><head>' > $(GITHUB_PAGES_DIR)/index.html
+	@echo '<meta charset="UTF-8">' >> $(GITHUB_PAGES_DIR)/index.html
+	@echo '<meta http-equiv="refresh" content="0; url=/render/" />' >> $(GITHUB_PAGES_DIR)/index.html
+	@echo '<title>Taskinity Render</title>' >> $(GITHUB_PAGES_DIR)/index.html
+	@echo '</head><body>' >> $(GITHUB_PAGES_DIR)/index.html
+	@echo '<p>Redirecting to <a href="/render/">Taskinity Render</a>...</p>' >> $(GITHUB_PAGES_DIR)/index.html
+	@echo '</body></html>' >> $(GITHUB_PAGES_DIR)/index.html
+	
 	@echo "Committing and pushing changes..."
 	@cd $(GITHUB_PAGES_DIR) && \
-	git add render/dist/ render/index.html && \
-	git commit -m "Update render script to version $$(npm version | grep taskinity-render | cut -d\' -f4)" && \
-	git push
-	@echo "Published to GitHub Pages successfully!"
-	@echo "You can access it at: https://taskinity.github.io/render/"
+	git add . && \
+	git commit -m "Update Taskinity Render to version $$(node -p 'require("../package.json").version')" || echo "No changes to commit" && \
+	if ! git remote get-url origin > /dev/null 2>&1; then \
+		echo "Adding remote origin..."; \
+		git remote add origin https://github.com/taskinity/taskinity.github.io.git; \
+	fi && \
+	git push -u origin main || (echo "Could not push to GitHub. Please make sure you have created the repository at https://github.com/taskinity/taskinity.github.io and have the necessary permissions." && exit 1)
+	
+	@echo "\n✅ Published to GitHub Pages successfully!"
+	@echo "🌐 You can access it at: https://taskinity.github.io/render/"
+	@echo ""
+	@echo "If you haven't already, you need to:"
+	@echo "1. Create a new repository named 'taskinity.github.io' at https://github.com/organizations/taskinity/repositories/new"
+	@echo "2. Make sure it's public"
+	@echo "3. Then run 'make publish-github' again"
 
 ## Publish to both npm and GitHub Pages
 publish: patch-version publish-npm publish-github

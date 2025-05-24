@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Taskinity Flow Example</title>
-  <script src="https://taskinity.github.io/render/taskinity-render.min.js"></script>
+  <!-- Taskinity Render will be loaded dynamically -->
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -81,9 +81,85 @@ results = run_flow_from_dsl(flow_dsl, {
   </code></pre>
 
   <script>
+    // Configuration object
+    window.taskinityRenderConfig = {
+      theme: 'github',
+      lineNumbers: true,
+      copyButton: true
+    };
+
+    // Function to load script
+    function loadScript(src, onSuccess, onError) {
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = onSuccess;
+      script.onerror = onError || function() {
+        console.error('Failed to load script:', src);
+      };
+      document.head.appendChild(script);
+    }
+
+    // Function to show error message
+    function showError(message) {
+      console.error(message);
+      const errorDiv = document.createElement('div');
+      errorDiv.style.cssText = 'background: #ffebee; border-left: 4px solid #f44336; color: #b71c1c; padding: 1em; margin: 1em 0; border-radius: 4px;';
+      errorDiv.innerHTML = `
+        <h3 style="margin-top: 0;">Error loading Taskinity Render</h3>
+        <p>${message}</p>
+        <p>If the problem persists, please <a href="https://github.com/taskinity/render/issues" target="_blank">report this issue</a>.</p>
+      `;
+      document.body.insertBefore(errorDiv, document.body.firstChild);
+    }
+
+    // Initialize when DOM is loaded
     document.addEventListener('DOMContentLoaded', () => {
-      // Initialize Taskinity Render
-      window.taskinityRender = new TaskinityRender();
+      // Try to load from CDN first
+      loadScript(
+        'https://cdn.jsdelivr.net/npm/taskinity-render/dist/taskinity-render.min.js',
+        // On success
+        () => {
+          try {
+            if (typeof TaskinityRender === 'function') {
+              window.taskinityRender = new TaskinityRender(window.taskinityRenderConfig);
+              console.log('Taskinity Render initialized successfully from CDN!');
+            } else {
+              throw new Error('TaskinityRender is not defined');
+            }
+          } catch (error) {
+            console.error('Error initializing from CDN, trying local copy...', error);
+            // Fallback to local copy if CDN fails
+            loadScript(
+              '/render/taskinity-render.min.js',
+              () => {
+                try {
+                  window.taskinityRender = new TaskinityRender(window.taskinityRenderConfig);
+                  console.log('Taskinity Render initialized from local copy!');
+                } catch (e) {
+                  showError('Failed to initialize from local copy: ' + e.message);
+                }
+              },
+              () => showError('Failed to load local copy of Taskinity Render')
+            );
+          }
+        },
+        // On error
+        () => {
+          console.log('CDN load failed, trying local copy...');
+          loadScript(
+            '/render/taskinity-render.min.js',
+            () => {
+              try {
+                window.taskinityRender = new TaskinityRender(window.taskinityRenderConfig);
+                console.log('Taskinity Render initialized from local copy!');
+              } catch (e) {
+                showError('Failed to initialize from local copy: ' + e.message);
+              }
+            },
+            () => showError('All script loading attempts failed')
+          );
+        }
+      );
     });
   </script>
 </body>

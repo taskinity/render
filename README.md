@@ -71,3 +71,5 @@ npm run dev
 # Budowanie wersji produkcyjnej
 npm run build
 ```
+
+<script src="https://cdn.jsdelivr.net/npm/taskinity-render/dist/taskinity-render.min.js"></script>

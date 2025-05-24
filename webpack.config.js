@@ -5,8 +5,12 @@ module.exports = {
   output: {
     filename: 'taskinity-render.min.js',
     path: path.resolve(__dirname, 'dist'),
-    library: 'TaskinityRender',
-    libraryTarget: 'umd',
+    library: {
+      name: 'TaskinityRender',
+      type: 'umd',
+      export: 'default',
+      umdNamedDefine: true
+    },
     globalObject: 'this'
   },
   module: {

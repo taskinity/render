@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskinityRender Test</title>
+    <script src="dist/taskinity-render.min.js"></script>
+</head>
+<body>
+    <h1>TaskinityRender Test</h1>
+    <div id="status">Checking TaskinityRender...</div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const status = document.getElementById('status');
+            
+            if (typeof TaskinityRender !== 'undefined') {
+                status.textContent = 'TaskinityRender is properly loaded!';
+                status.style.color = 'green';
+                
+                // Test initialization
+                try {
+                    const renderer = new TaskinityRender();
+                    status.textContent += ' TaskinityRender initialized successfully!';
+                } catch (e) {
+                    status.textContent = 'Error initializing TaskinityRender: ' + e.message;
+                    status.style.color = 'red';
+                }
+            } else {
+                status.textContent = 'Error: TaskinityRender is not defined!';
+                status.style.color = 'red';
+            }
+        });
+    </script>
+</body>
+</html>

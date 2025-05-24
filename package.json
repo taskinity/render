@@ -1,6 +1,6 @@
 {
   "name": "taskinity-render",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Simple renderer for Taskinity flow diagrams and syntax highlighting",
   "main": "dist/taskinity-render.min.js",
   "scripts": {
@@ -19,8 +19,8 @@
     "syntax",
     "highlighting"
   ],
-  "author": "Taskinity Team",
-  "license": "MIT",
+  "author": "Tom Sapletta",
+  "license": "Apache-2.0",
   "dependencies": {
     "prismjs": "^1.29.0"
   },

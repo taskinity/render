@@ -57,29 +57,18 @@ serve:
 	@mkdir -p $(EXAMPLES_DIR)
 	python -m http.server $(SERVER_PORT)
 
-## Get the current version from package.json
-VERSION := $(shell node -p "require('./package.json').version")
+## Bump package version (patch, minor, major)
+version:
+	git tag -l
+	@echo "Current version: $$(npm version | grep taskinity-render | cut -d\' -f4)"
+	@echo "Specify version bump type (patch, minor, major):"
+	@read TYPE && npm version $$TYPE
+	@echo "New version: $$(npm version | grep taskinity-render | cut -d\' -f4)"
 
-## Bump package version (patch, minor, major) and create git tag
-version: check-git-clean
-	@echo "Current version: $(VERSION)"
-	@echo "Enter version increment (patch, minor, major):"
-	@read INCREMENT && \
-	npm version $$INCREMENT --no-git-tag-version --force && \
-	NEW_VERSION=$$(node -p "require('./package.json').version") && \
-	git add --force package.json package-lock.json && \
-	git commit -m "Bump version to v$$NEW_VERSION" && \
-	git tag -a v$$NEW_VERSION -m "v$$NEW_VERSION" && \
-	git push origin v$$NEW_VERSION && \
-	git push && \
-	echo "Version bumped to $$NEW_VERSION and tag v$$NEW_VERSION created"
-
-## Check if git working directory is clean
-check-git-clean:
-	@if [ -n "$(shell git status --porcelain)" ]; then \
-		echo "Error: Git working directory is not clean. Please commit or stash your changes first."; \
-		exit 1; \
-	fi
+patch-version:
+	@echo "Current version: $$(npm version | grep taskinity-render | cut -d\' -f4)"
+	npm version patch
+	@echo "New version: $$(npm version | grep taskinity-render | cut -d\' -f4)"
 
 ## Publish to GitHub Pages
 publish-github:
@@ -105,7 +94,7 @@ publish-github:
 	@echo "Published to GitHub Pages successfully!"
 
 ## Publish to both npm and GitHub Pages
-publish: publish-npm publish-github
+publish: patch-version publish-npm publish-github
 	@echo "Publish completed successfully!"
 
 ## Publish to npm

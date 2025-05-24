@@ -299,17 +299,12 @@ class DSLFlowVisualizer {
       });
     });
 
-    // Create a simple layout - one node per column, in order of appearance
+    // Create task nodes with calculated positions
     const taskNodes = {};
-    const taskList = Object.keys(flowData.tasks);
-    const totalWidth = (taskList.length - 1) * horizontalSpacing + nodeWidth;
-    const startX = (1000 - totalWidth) / 2;
-
-    // Position nodes in a horizontal line
-    taskList.forEach((taskName, index) => {
+    Object.entries(coordinates).forEach(([taskName, pos]) => {
       taskNodes[taskName] = {
-        x: startX + index * horizontalSpacing,
-        y: startY,
+        x: pos.x,
+        y: pos.y,
         width: nodeWidth,
         height: nodeHeight
       };

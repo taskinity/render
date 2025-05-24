@@ -1,6 +1,6 @@
 {
   "name": "taskinity-render",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Simple renderer for Taskinity flow diagrams and syntax highlighting",
   "main": "dist/taskinity-render.min.js",
   "scripts": {

@@ -54,17 +54,54 @@
     send_welcome_email -> complete_registration</code></pre>
 
     <!-- Load Taskinity Render -->
-    <script src="dist/taskinity-render.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Initialize Taskinity Render with default options
-            window.taskinityRender = new TaskinityRender({
-                theme: 'github',
-                lineNumbers: true,
-                copyButton: true
-            });
-            
-            console.log('Taskinity Render initialized!');
+        // Configuration object that will be used to initialize TaskinityRender
+        window.taskinityRenderConfig = {
+            theme: 'github',
+            lineNumbers: true,
+            copyButton: true
+        };
+
+        // Error handler for script loading
+        function handleScriptError(error) {
+            console.error('Error loading Taskinity Render:', error);
+            // Show a user-friendly error message
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = 'background: #ffebee; border-left: 4px solid #f44336; color: #b71c1c; padding: 1em; margin: 1em 0; border-radius: 4px;';
+            errorDiv.innerHTML = `
+                <h3 style="margin-top: 0;">Error loading Taskinity Render</h3>
+                <p>Failed to load the Taskinity Render script. Please check the following:</p>
+                <ol>
+                    <li>Make sure the file <code>dist/taskinity-render.min.js</code> exists</li>
+                    <li>Verify the file permissions are correct</li>
+                    <li>Check the browser's console for detailed error messages</li>
+                </ol>
+                <p>If the problem persists, please <a href="https://github.com/taskinity/render/issues" target="_blank">report this issue</a>.</p>
+            `;
+            document.body.insertBefore(errorDiv, document.body.firstChild);
+        }
+
+        // Load the script dynamically
+        document.addEventListener('DOMContentLoaded', function() {
+            const script = document.createElement('script');
+            script.src = 'dist/taskinity-render.min.js';
+            script.onerror = function() {
+                handleScriptError(new Error('Failed to load script: ' + script.src));
+            };
+            script.onload = function() {
+                try {
+                    // Initialize Taskinity Render with the configuration
+                    if (typeof TaskinityRender === 'function') {
+                        window.taskinityRender = new TaskinityRender(window.taskinityRenderConfig);
+                        console.log('Taskinity Render initialized successfully!');
+                    } else {
+                        throw new Error('TaskinityRender is not defined');
+                    }
+                } catch (error) {
+                    handleScriptError(error);
+                }
+            };
+            document.head.appendChild(script);
         });
     </script>
 </body>

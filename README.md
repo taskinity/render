@@ -20,31 +20,96 @@ A JavaScript library for rendering Taskinity flow diagrams and syntax highlighti
 
 ## Installation
 
+### Using npm
+
 ```bash
 npm install taskinity-render
 ```
 
-lub bezpośrednio z CDN:
+### Using CDN
 
 ```html
+<!-- Load Taskinity Render from CDN -->
 <script src="https://cdn.jsdelivr.net/npm/taskinity-render/dist/taskinity-render.min.js"></script>
+
+<!-- Initialize after the script is loaded -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    window.taskinityRender = new TaskinityRender({
+      theme: 'github',
+      lineNumbers: true,
+      copyButton: true
+    });
+  });
+</script>
 ```
 
 ## Usage
 
 ### Basic Usage
 
-Add the following script tag to your HTML document, just before the closing `</body>` tag:
+#### Option 1: Using a module bundler (recommended)
+
+```javascript
+import TaskinityRender from 'taskinity-render';
+
+// Initialize with options
+const taskinityRender = new TaskinityRender({
+  theme: 'github',
+  lineNumbers: true,
+  copyButton: true
+});
+```
+
+#### Option 2: Using a script tag with CDN
+
+Add the following code to your HTML document, just before the closing `</body>` tag:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/taskinity-render/dist/taskinity-render.min.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    window.taskinityRender = new TaskinityRender({
-      theme: 'default',
-      lineNumbers: true,
-      copyButton: true
-    });
+  // Configuration object
+  window.taskinityRenderConfig = {
+    theme: 'github',
+    lineNumbers: true,
+    copyButton: true
+  };
+
+  // Error handler
+  function handleScriptError(error) {
+    console.error('Error loading Taskinity Render:', error);
+    // Show error message to the user
+    const errorDiv = document.createElement('div');
+    errorDiv.style.cssText = 'background: #ffebee; border-left: 4px solid #f44336; color: #b71c1c; padding: 1em; margin: 1em 0; border-radius: 4px;';
+    errorDiv.innerHTML = `
+      <h3 style="margin-top: 0;">Error loading Taskinity Render</h3>
+      <p>Failed to load the Taskinity Render script. Please check the following:</p>
+      <ol>
+        <li>Make sure you're connected to the internet</li>
+        <li>Check the browser's console for detailed error messages</li>
+        <li>Try refreshing the page</li>
+      </ol>
+    `;
+    document.body.insertBefore(errorDiv, document.body.firstChild);
+  }
+
+  // Load the script
+  document.addEventListener('DOMContentLoaded', function() {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/taskinity-render/dist/taskinity-render.min.js';
+    script.onerror = () => handleScriptError(new Error('Failed to load script'));
+    script.onload = function() {
+      try {
+        if (typeof TaskinityRender === 'function') {
+          window.taskinityRender = new TaskinityRender(window.taskinityRenderConfig);
+          console.log('Taskinity Render initialized successfully!');
+        } else {
+          throw new Error('TaskinityRender is not defined');
+        }
+      } catch (error) {
+        handleScriptError(error);
+      }
+    };
+    document.head.appendChild(script);
   });
 </script>
 ```
@@ -198,6 +263,74 @@ make diagnostic
 - [NPM Package](https://www.npmjs.com/package/taskinity-render)
 - [GitHub Repository](https://github.com/taskinity/render)
 - [Live Demo](https://taskinity.github.io/render/)
+
+## Troubleshooting
+
+### Common Issues
+
+#### 1. "TaskinityRender is not defined" Error
+This error occurs when the script fails to load or initialize properly. Here's how to fix it:
+
+1. **Check the script source**
+   - Verify the path to the script is correct
+   - If using a CDN, make sure the URL is accessible
+   - If hosting locally, ensure the file exists in the specified location
+
+2. **Check the browser's console**
+   - Look for any network errors (404, CORS issues, etc.)
+   - Check for syntax errors in your JavaScript code
+
+3. **Loading order**
+   - Make sure the script is loaded before you try to use `TaskinityRender`
+   - Use the `DOMContentLoaded` event as shown in the examples
+
+#### 2. Script Loading Issues
+
+If the script fails to load:
+- Check your internet connection
+- Try clearing your browser cache (Ctrl+F5 or Cmd+Shift+R)
+- Verify the CDN URL is correct
+- Consider downloading the script and hosting it yourself
+
+#### 3. Styling Issues
+
+If the diagrams or syntax highlighting don't look correct:
+- Make sure you've included the necessary CSS files
+- Check for CSS conflicts with your existing styles
+- Verify that the theme you're using is valid
+
+## Development
+
+### Building from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/taskinity/render.git
+cd render
+
+# Install dependencies
+npm install
+
+# Build the project
+npm run build
+
+# Start the development server
+npm start
+```
+
+### Testing
+
+```bash
+# Run tests
+npm test
+
+# Run linter
+npm run lint
+```
+
+## Contributing
+
+Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) for details.
 
 ## License
 

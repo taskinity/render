@@ -20,7 +20,7 @@ help:
 	@echo "  test             - Run tests"
 	@echo "  lint             - Run linter"
 	@echo "  serve            - Start local server for testing"
-	@echo "  version          - Bump package version (patch, minor, major)"
+	@echo "  version          - Bump package version (patch, minor, major) and create git tag"
 	@echo "  publish-github   - Publish to GitHub Pages"
 	@echo "  publish-npm      - Publish to npm"
 	@echo "  clean            - Clean build artifacts"
@@ -40,7 +40,11 @@ build:
 ## Run tests
 test:
 	@echo "Running tests..."
-	npm test
+	@if [ -f "test/test.js" ]; then \
+		npm test; \
+	else \
+		echo "No tests found. Create tests in the test/ directory."; \
+	fi
 
 ## Run linter
 lint:
@@ -94,9 +98,11 @@ publish: patch-version publish-npm publish-github
 	@echo "Publish completed successfully!"
 
 ## Publish to npm
-publish-npm:
+publish-npm: check-git-clean
+	@echo "Current version: $(VERSION)"
 	@echo "Building package for npm..."
 	npm run build
+	@echo "Publishing version $(VERSION) to npm..."
 	npm publish
 
 ## Push changes to GitHub

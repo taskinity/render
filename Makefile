@@ -91,8 +91,7 @@ publish: publish-npm publish-github
 publish-npm:
 	@echo "Building package for npm..."
 	npm run build
-	@echo "Do you want to publish to npm? (y/n)"
-	@read CONFIRM && if [ $$CONFIRM = "y" ]; then npm publish; else echo "Publishing canceled"; fi
+	npm publish
 
 ## Push changes to GitHub
 push:

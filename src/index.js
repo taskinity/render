@@ -116,57 +116,64 @@ class DSLFlowVisualizer {
       connections: [],
     };
 
-    // Extract flow name
-    const flowMatch = lines[0].match(/flow\s+(\w+):/);
+    // Extract flow name from first line
+    const flowMatch = lines[0].match(/^\s*flow\s+(\w+)\s*:/);
     if (flowMatch) {
-      flowData.name = flowMatch[1];
+      flowData.name = flowMatch[1].trim();
     }
 
     // Process each line
-    let currentTask = null;
-
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
 
       // Skip empty lines
       if (!line) continue;
-
+      
       // Extract flow description
-      if (line.startsWith('description:')) {
-        flowData.description = line.split(':', 2)[1].trim().replace(/"/g, '');
+      const descMatch = line.match(/^\s*description\s*:\s*"?([^"]+)"?\s*$/);
+      if (descMatch) {
+        flowData.description = descMatch[1].trim();
         continue;
       }
 
-      // Extract task connections
-      const connectionMatch = line.match(/(\w+)\s*->\s*(\w+)/);
+      // Extract connection (supports both -> and -?>)
+      const connectionMatch = line.match(/^\s*(\w+)\s*-+>\s*(\w+)\s*$/);
       if (connectionMatch) {
-        const [_, source, target] = connectionMatch;
+        const [, source, target] = connectionMatch;
         flowData.connections.push({ source, target });
-
-        // Add tasks if they don't exist
+        
+        // Ensure tasks exist in the tasks object
         if (!flowData.tasks[source]) {
           flowData.tasks[source] = { name: source };
         }
         if (!flowData.tasks[target]) {
           flowData.tasks[target] = { name: target };
         }
-
         continue;
       }
 
-      // Extract task definition
-      const taskMatch = line.match(/task\s+(\w+):/);
+      // Extract task definition (if any)
+      const taskMatch = line.match(/^\s*task\s+(\w+):/);
       if (taskMatch) {
-        currentTask = taskMatch[1];
-        flowData.tasks[currentTask] = { name: currentTask };
+        const taskName = taskMatch[1];
+        if (!flowData.tasks[taskName]) {
+          flowData.tasks[taskName] = { name: taskName };
+        }
         continue;
       }
+    }
 
-      // Extract task properties
-      if (currentTask && line.includes(':')) {
-        const [key, value] = line.split(':', 2).map((s) => s.trim());
-        flowData.tasks[currentTask][key] = value.replace(/"/g, '');
-      }
+    // If no tasks were explicitly defined, infer them from connections
+    if (Object.keys(flowData.tasks).length === 0) {
+      const allTasks = new Set();
+      flowData.connections.forEach(conn => {
+        allTasks.add(conn.source);
+        allTasks.add(conn.target);
+      });
+      
+      allTasks.forEach(taskName => {
+        flowData.tasks[taskName] = { name: taskName };
+      });
     }
 
     return flowData;
@@ -176,25 +183,28 @@ class DSLFlowVisualizer {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('width', '100%');
     svg.setAttribute('height', '100%');
-    svg.setAttribute('viewBox', '0 0 800 600');
+    svg.setAttribute('viewBox', '0 0 1000 800');
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
     // Add title
     const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    title.setAttribute('x', '400');
-    title.setAttribute('y', '30');
+    title.setAttribute('x', '500');
+    title.setAttribute('y', '40');
     title.setAttribute('text-anchor', 'middle');
-    title.setAttribute('font-size', '20');
+    title.setAttribute('font-size', '24');
     title.setAttribute('font-weight', 'bold');
+    title.setAttribute('fill', '#333');
     title.textContent = flowData.name;
     svg.appendChild(title);
 
     // Add description if available
     if (flowData.description) {
       const desc = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      desc.setAttribute('x', '400');
-      desc.setAttribute('y', '55');
+      desc.setAttribute('x', '500');
+      desc.setAttribute('y', '70');
       desc.setAttribute('text-anchor', 'middle');
-      desc.setAttribute('font-size', '14');
+      desc.setAttribute('font-size', '16');
+      desc.setAttribute('fill', '#666');
       desc.textContent = flowData.description;
       svg.appendChild(desc);
     }
@@ -289,61 +299,20 @@ class DSLFlowVisualizer {
       });
     });
 
-    // Create nodes
-    Object.entries(flowData.tasks).forEach(([taskName, task]) => {
-      const { x, y } = coordinates[taskName];
+    // Create a simple layout - one node per column, in order of appearance
+    const taskNodes = {};
+    const taskList = Object.keys(flowData.tasks);
+    const totalWidth = (taskList.length - 1) * horizontalSpacing + nodeWidth;
+    const startX = (1000 - totalWidth) / 2;
 
-      // Create group for the task
-      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      g.setAttribute('transform', `translate(${x}, ${y})`);
-
-      // Create rectangle
-      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      rect.setAttribute('width', nodeWidth.toString());
-      rect.setAttribute('height', nodeHeight.toString());
-      rect.setAttribute('rx', '5');
-      rect.setAttribute('ry', '5');
-      rect.setAttribute('fill', '#4682b4');
-      rect.setAttribute('stroke', '#36648b');
-      rect.setAttribute('stroke-width', '2');
-      g.appendChild(rect);
-
-      // Create text
-      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      text.setAttribute('x', (nodeWidth / 2).toString());
-      text.setAttribute('y', (nodeHeight / 2).toString());
-      text.setAttribute('text-anchor', 'middle');
-      text.setAttribute('dominant-baseline', 'middle');
-      text.setAttribute('fill', 'white');
-      text.setAttribute('font-size', '14');
-      text.textContent = taskName;
-      g.appendChild(text);
-
-      svg.appendChild(g);
+    // Position nodes in a horizontal line
+    taskList.forEach((taskName, index) => {
       taskNodes[taskName] = {
-        x, y, width: nodeWidth, height: nodeHeight,
+        x: startX + index * horizontalSpacing,
+        y: startY,
+        width: nodeWidth,
+        height: nodeHeight
       };
-    });
-
-    // Create connections
-    flowData.connections.forEach((conn) => {
-      const source = taskNodes[conn.source];
-      const target = taskNodes[conn.target];
-
-      // Calculate path points
-      const startX = source.x + source.width / 2;
-      const startY = source.y + source.height;
-      const endX = target.x + target.width / 2;
-      const endY = target.y;
-
-      // Create path
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      path.setAttribute('d', `M${startX},${startY} C${startX},${startY + 30} ${endX},${endY - 30} ${endX},${endY}`);
-      path.setAttribute('fill', 'none');
-      path.setAttribute('stroke', '#36648b');
-      path.setAttribute('stroke-width', '2');
-      path.setAttribute('marker-end', 'url(#arrowhead)');
-      svg.appendChild(path);
     });
 
     // Add arrowhead marker
@@ -355,13 +324,75 @@ class DSLFlowVisualizer {
     marker.setAttribute('refX', '10');
     marker.setAttribute('refY', '3.5');
     marker.setAttribute('orient', 'auto');
-
-    const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-    polygon.setAttribute('points', '0 0, 10 3.5, 0 7');
-    polygon.setAttribute('fill', '#36648b');
-    marker.appendChild(polygon);
+    const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    arrow.setAttribute('points', '0 0, 10 3.5, 0 7');
+    arrow.setAttribute('fill', '#666');
+    marker.appendChild(arrow);
     defs.appendChild(marker);
-    svg.appendChild(defs);
+    svg.insertBefore(defs, svg.firstChild);
+
+    // Draw connections first (so they appear under nodes)
+    flowData.connections.forEach(conn => {
+      const source = taskNodes[conn.source];
+      const target = taskNodes[conn.target];
+      
+      if (source && target) {
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const startX = source.x + source.width / 2;
+        const startY = source.y + source.height / 2;
+        const endX = target.x + target.width / 2;
+        const endY = target.y + target.height / 2;
+        
+        // Draw a curved path with control points
+        const controlY1 = startY + 50;
+        const controlY2 = endY - 50;
+        
+        path.setAttribute('d', `M${startX},${startY} C${startX},${controlY1} ${endX},${controlY2} ${endX},${endY}`);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', '#666');
+        path.setAttribute('stroke-width', '2');
+        path.setAttribute('marker-end', 'url(#arrowhead)');
+        svg.appendChild(path);
+      }
+    });
+
+    // Draw nodes
+    Object.entries(taskNodes).forEach(([taskName, node]) => {
+      // Draw node background
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', node.x);
+      rect.setAttribute('y', node.y - node.height / 2);
+      rect.setAttribute('width', node.width);
+      rect.setAttribute('height', node.height);
+      rect.setAttribute('rx', '8');
+      rect.setAttribute('ry', '8');
+      rect.setAttribute('fill', '#4a89dc');
+      rect.setAttribute('stroke', '#3b7dd8');
+      rect.setAttribute('stroke-width', '2');
+      rect.setAttribute('class', 'task-node');
+      svg.appendChild(rect);
+      
+      // Draw task name with text wrapping
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', node.x + node.width / 2);
+      text.setAttribute('y', node.y + 5);
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('dominant-baseline', 'middle');
+      text.setAttribute('fill', 'white');
+      text.setAttribute('font-size', '12');
+      text.setAttribute('font-weight', '500');
+      text.setAttribute('style', 'user-select: none;');
+      
+      // Simple text wrapping
+      const words = taskName.split('_');
+      const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+      tspan.setAttribute('x', node.x + node.width / 2);
+      tspan.setAttribute('dy', '0');
+      tspan.textContent = words.join(' ');
+      text.appendChild(tspan);
+      
+      svg.appendChild(text);
+    });
 
     return svg;
   }

@@ -1,7 +1,7 @@
 # Makefile for Taskinity Render package
 
 .PHONY: help install build test lint serve push publish publish-github publish-npm version clean diagnostic \
-        gh-check gh-issues gh-issue-new gh-issue-close gh-issue-view
+      gh-check gh-issues gh-issue-new gh-issue-close gh-issue-view
 
 # Variables
 DIST_DIR = dist

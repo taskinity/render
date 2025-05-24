@@ -65,9 +65,9 @@ version: check-git-clean
 	@echo "Current version: $(VERSION)"
 	@echo "Enter version increment (patch, minor, major):"
 	@read INCREMENT && \
-	npm version $$INCREMENT --no-git-tag-version && \
+	npm version $$INCREMENT --no-git-tag-version --force && \
 	NEW_VERSION=$$(node -p "require('./package.json').version") && \
-	git add package.json package-lock.json && \
+	git add --force package.json package-lock.json && \
 	git commit -m "Bump version to v$$NEW_VERSION" && \
 	git tag -a v$$NEW_VERSION -m "v$$NEW_VERSION" && \
 	git push origin v$$NEW_VERSION && \

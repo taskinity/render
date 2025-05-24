@@ -209,16 +209,14 @@ class DSLFlowVisualizer {
       svg.appendChild(desc);
     }
 
-    // Create task nodes
-    const taskNodes = {};
+    // Get tasks and initialize layout variables
     const tasks = Object.values(flowData.tasks);
-
-    // Calculate layout
+    
+    // Layout configuration
     const nodeWidth = 120;
     const nodeHeight = 60;
     const horizontalSpacing = 200;
     const verticalSpacing = 100;
-    const startX = 400 - (Math.min(tasks.length, 3) * horizontalSpacing) / 2;
     const startY = 120;
 
     // Create dependency graph

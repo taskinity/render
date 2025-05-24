@@ -20,7 +20,7 @@ help:
 	@echo "  test             - Run tests"
 	@echo "  lint             - Run linter"
 	@echo "  serve            - Start local server for testing"
-	@echo "  version          - Bump package version (patch, minor, major)"
+	@echo "  version          - Bump package version (patch, minor, major) and create git tag"
 	@echo "  publish-github   - Publish to GitHub Pages"
 	@echo "  publish-npm      - Publish to npm"
 	@echo "  clean            - Clean build artifacts"
@@ -40,7 +40,11 @@ build:
 ## Run tests
 test:
 	@echo "Running tests..."
-	npm test
+	@if [ -f "test/test.js" ]; then \
+		npm test; \
+	else \
+		echo "No tests found. Create tests in the test/ directory."; \
+	fi
 
 ## Run linter
 lint:
@@ -53,12 +57,29 @@ serve:
 	@mkdir -p $(EXAMPLES_DIR)
 	python -m http.server $(SERVER_PORT)
 
-## Bump package version (patch, minor, major)
-version:
-	@echo "Current version: $$(npm version | grep taskinity-render | cut -d\' -f4)"
-	@echo "Specify version bump type (patch, minor, major):"
-	@read TYPE && npm version $$TYPE
-	@echo "New version: $$(npm version | grep taskinity-render | cut -d\' -f4)"
+## Get the current version from package.json
+VERSION := $(shell node -p "require('./package.json').version")
+
+## Bump package version (patch, minor, major) and create git tag
+version: check-git-clean
+	@echo "Current version: $(VERSION)"
+	@echo "Enter version increment (patch, minor, major):"
+	@read INCREMENT && \
+	npm version $$INCREMENT --no-git-tag-version && \
+	NEW_VERSION=$$(node -p "require('./package.json').version") && \
+	git add package.json package-lock.json && \
+	git commit -m "Bump version to v$$NEW_VERSION" && \
+	git tag -a v$$NEW_VERSION -m "v$$NEW_VERSION" && \
+	git push origin v$$NEW_VERSION && \
+	git push && \
+	echo "Version bumped to $$NEW_VERSION and tag v$$NEW_VERSION created"
+
+## Check if git working directory is clean
+check-git-clean:
+	@if [ -n "$(shell git status --porcelain)" ]; then \
+		echo "Error: Git working directory is not clean. Please commit or stash your changes first."; \
+		exit 1; \
+	fi
 
 ## Publish to GitHub Pages
 publish-github:
@@ -88,9 +109,11 @@ publish: publish-npm publish-github
 	@echo "Publish completed successfully!"
 
 ## Publish to npm
-publish-npm:
+publish-npm: check-git-clean
+	@echo "Current version: $(VERSION)"
 	@echo "Building package for npm..."
 	npm run build
+	@echo "Publishing version $(VERSION) to npm..."
 	npm publish
 
 ## Push changes to GitHub
